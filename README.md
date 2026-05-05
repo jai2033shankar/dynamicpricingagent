@@ -84,18 +84,60 @@ The LogiPrice platform adheres to rigorous security standards to protect sensiti
 * **Dynamic Interruption Handling:** Synchronized event loops prevent Chrome/Safari from breaking the Text-to-Speech engine when microphone hardware streams are released.
 * **Simulated Push Notifications:** Provides immediate visual feedback upon verbal booking confirmations.
 
+## 📈 Dynamic Pricing Engine (Logic & Formula)
+
+The core competitive advantage of LogiPrice is its proprietary pricing engine that adjusts rates in real-time based on high-frequency market signals.
+
+### Core Formula: $P = (B \times D \times F \times T) + M$
+
+*   **P (Final Price):** The real-time quote delivered to the user.
+*   **B (Base Cost):** Distance (km) × Carrier Base Rate × Route Complexity Index.
+*   **D (Demand Multiplier):** Real-time corridor demand surge (e.g., higher rates for peak seasons on Mumbai-Delhi routes).
+*   **F (Fuel Index):** Automated adjustments tied to regional fuel price indices.
+*   **T (Traffic/Weather Factor):** A composite score derived from live weather (Monsoon/Snow) and metropolitan traffic congestion indices.
+*   **M (Margin):** An adaptive margin that fluctuates (3% to 15%) based on supply availability and customer priority.
+
+---
+
+## 🚀 Demo & Walkthrough
+
+### 1. The Activation Flow
+Due to browser security protocols, voice-first apps require an initial user interaction. LogiPrice handles this with a premium **Start Assistant** overlay.
+- **Action:** Click "Start Assistant".
+- **Result:** Initializes the secure audio context and triggers the **Female Greeting**.
+
+### 2. Inquiry Phase
+- **Utterance:** *"Ship 2 tons of electronics from Mumbai to Delhi urgently."*
+- **Processing:** The SLM extracts the intent. The Dynamic Pricing Engine calculates rates for multiple carriers (e.g., GreenWay, ExpressLink).
+- **Feedback:** The assistant verbally summarizes every option: *"I found 3 options. Option 1 is with GreenWay for ₹57,400..."*
+
+### 3. Selection & Booking
+- **Utterance:** *"Book the first one."*
+- **Action:** The system matches "first one" to Option 1 and transitions to the **Booking Screen**.
+- **Confirmation:** A push notification drops down visually while the voice confirms: *"Booking confirmed! I have sent the tracking details to your email."*
+
+---
+
 ## 🛠️ Setup & Execution
 
-### Flutter Client
+### Prerequisites
+- Flutter SDK (Stable)
+- Python 3.9+
+- Chrome Browser (Recommended for Web Speech API)
+
+### 1. Start the Backend Services
+```bash
+cd backend/gateway
+uvicorn main:app --reload --port 8000
+```
+*(Ensure all microservices in `backend/services` are running if in production mode).*
+
+### 2. Start the Flutter Web App
 ```bash
 cd flutter_app
 flutter pub get
 flutter run -d chrome --web-port 3000
 ```
 
-### Backend Engine
-```bash
-cd backend
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
-```
+### 3. Testing in Incognito
+If testing in Incognito mode, ensure you click the screen once to allow the "Audio Autoplay" policy to activate the greeting.
