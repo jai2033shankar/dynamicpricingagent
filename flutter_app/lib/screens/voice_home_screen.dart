@@ -64,11 +64,22 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
 
   Future<void> _initVoice() async {
     final available = await _voiceService.initialize();
+    
+    // Also ensure TTS is ready
+    final tts = TTSService();
+    await tts.initialize();
+
     if (mounted) {
       setState(() {
         _voiceAvailable = available;
         _voiceInitialized = true;
       });
+
+      // Automatically greet the user with the female voice
+      if (!_hasGreeted) {
+        _hasGreeted = true;
+        _speakAndListen();
+      }
     }
   }
 
@@ -135,7 +146,7 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
     // Usually it completes when finished speaking.
     // We'll also start the visual pulse for speaking.
     
-    await tts.speak("Where are you shipping today? For example, ship 2 tons of electronics from Mumbai to Delhi.");
+    await tts.speak("Hello! I am your logistics assistant. I can help you find the best shipping rates and book your cargo. For example, you can say: Ship 2 tons of electronics from Mumbai to Delhi, or ask for the cheapest way to send goods from Bangalore to Chennai. How can I help you today?");
     
     // Ensure we are mounted
     if (!mounted) return;

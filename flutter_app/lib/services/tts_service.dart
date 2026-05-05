@@ -41,34 +41,7 @@ class TTSService {
       }
 
       await _flutterTts.setLanguage("en-US");
-      
-      try {
-        final voices = await _flutterTts.getVoices;
-        if (voices != null) {
-          final List<dynamic> voiceList = voices.toList();
-          
-          final preferredNames = ['samantha', 'victoria', 'karen', 'zira', 'microsoft zira', 'google us english', 'female'];
-          
-          for (final pref in preferredNames) {
-            final matches = voiceList.where((v) {
-              final name = v['name']?.toString().toLowerCase() ?? '';
-              final locale = v['locale']?.toString().toLowerCase() ?? '';
-              return name.contains(pref) && locale.contains('en');
-            }).toList();
-            
-            if (matches.isNotEmpty) {
-              _currentVoice = Map<String, String>.from(matches.first);
-              if (kDebugMode) debugPrint("🗣️ TTS Selected Voice: $_currentVoice");
-              break;
-            }
-          }
-          if (_currentVoice != null) {
-            await _flutterTts.setVoice({"name": _currentVoice!["name"]!, "locale": _currentVoice!["locale"]!});
-          }
-        }
-      } catch (e) {
-        if (kDebugMode) debugPrint("🗣️ TTS Voice Selection Error: $e");
-      }
+      await _findAndSetFemaleVoice();
 
       await _flutterTts.setSpeechRate(kIsWeb ? 0.9 : 0.5); 
       await _flutterTts.setVolume(1.0);
@@ -112,6 +85,45 @@ class TTSService {
     }
   }
 
+  Future<void> _findAndSetFemaleVoice() async {
+    try {
+      final voices = await _flutterTts.getVoices;
+      if (voices != null) {
+        final List<dynamic> voiceList = voices.toList();
+        
+        // Priority list for female voices across platforms
+        final preferredNames = [
+          'samantha', 'victoria', 'karen', 'zira', 'microsoft zira', 
+          'google us english', 'female', 'fiona', 'moira', 'veena',
+          'en-us-x-sfg#female_1-local'
+        ];
+        
+        for (final pref in preferredNames) {
+          final matches = voiceList.where((v) {
+            final name = v['name']?.toString().toLowerCase() ?? '';
+            final locale = v['locale']?.toString().toLowerCase() ?? '';
+            return name.contains(pref) && (locale.contains('en-us') || locale.contains('en-gb') || locale.contains('en-au'));
+          }).toList();
+          
+          if (matches.isNotEmpty) {
+            _currentVoice = Map<String, String>.from(matches.first);
+            if (kDebugMode) debugPrint("🗣️ TTS Selected Female Voice: $_currentVoice");
+            break;
+          }
+        }
+        
+        if (_currentVoice != null) {
+          await _flutterTts.setVoice({
+            "name": _currentVoice!["name"]!, 
+            "locale": _currentVoice!["locale"]!
+          });
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint("🗣️ TTS Voice Selection Error: $e");
+    }
+  }
+
   /// Speak the provided text
   Future<void> speak(String text) async {
     if (text.trim().isEmpty) return;
@@ -121,12 +133,24 @@ class TTSService {
       await stop();
     }
 
+    // Try to re-confirm voice selection in case it was initialized too early (web)
+    if (_currentVoice == null) {
+      await _findAndSetFemaleVoice();
+    }
+
     _speechCompleter = Completer<void>();
 
     try {
       if (_currentVoice != null) {
-        await _flutterTts.setVoice({"name": _currentVoice!["name"]!, "locale": _currentVoice!["locale"]!});
+        await _flutterTts.setVoice({
+          "name": _currentVoice!["name"]!, 
+          "locale": _currentVoice!["locale"]!
+        });
       }
+      
+      // Re-apply pitch to ensure consistency
+      await _flutterTts.setPitch(1.3);
+      
       await _flutterTts.speak(text);
       // Wait for completion handler to fire
       await _speechCompleter?.future;
