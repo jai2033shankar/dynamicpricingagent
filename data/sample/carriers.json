@@ -1,0 +1,112 @@
+[
+  {
+    "carrier_id": "C001",
+    "name": "ABC Logistics",
+    "fleet_type": ["truck", "reefer"],
+    "cost_per_km": 25,
+    "reliability_score": 0.92,
+    "availability": true,
+    "avg_speed_kmh": 55,
+    "coverage_cities": ["Mumbai", "Pune", "Indore", "Delhi", "Jaipur", "Ahmedabad"],
+    "rating": 4.5
+  },
+  {
+    "carrier_id": "C002",
+    "name": "SpeedFreight India",
+    "fleet_type": ["truck", "container"],
+    "cost_per_km": 30,
+    "reliability_score": 0.95,
+    "availability": true,
+    "avg_speed_kmh": 65,
+    "coverage_cities": ["Mumbai", "Delhi", "Bangalore", "Chennai", "Hyderabad", "Kolkata"],
+    "rating": 4.7
+  },
+  {
+    "carrier_id": "C003",
+    "name": "GreenWay Transport",
+    "fleet_type": ["truck"],
+    "cost_per_km": 18,
+    "reliability_score": 0.85,
+    "availability": true,
+    "avg_speed_kmh": 50,
+    "coverage_cities": ["Mumbai", "Pune", "Nashik", "Nagpur", "Indore", "Bhopal", "Delhi"],
+    "rating": 4.0
+  },
+  {
+    "carrier_id": "C004",
+    "name": "ColdChain Express",
+    "fleet_type": ["reefer"],
+    "cost_per_km": 40,
+    "reliability_score": 0.97,
+    "availability": true,
+    "avg_speed_kmh": 50,
+    "coverage_cities": ["Mumbai", "Pune", "Delhi", "Bangalore", "Chennai", "Hyderabad"],
+    "rating": 4.8
+  },
+  {
+    "carrier_id": "C005",
+    "name": "BharatHaul",
+    "fleet_type": ["truck", "flatbed"],
+    "cost_per_km": 20,
+    "reliability_score": 0.88,
+    "availability": true,
+    "avg_speed_kmh": 55,
+    "coverage_cities": ["Delhi", "Jaipur", "Lucknow", "Kanpur", "Varanasi", "Patna", "Kolkata"],
+    "rating": 4.2
+  },
+  {
+    "carrier_id": "C006",
+    "name": "Deccan Movers",
+    "fleet_type": ["truck", "container"],
+    "cost_per_km": 22,
+    "reliability_score": 0.90,
+    "availability": true,
+    "avg_speed_kmh": 55,
+    "coverage_cities": ["Bangalore", "Chennai", "Hyderabad", "Pune", "Mumbai", "Kochi"],
+    "rating": 4.3
+  },
+  {
+    "carrier_id": "C007",
+    "name": "TurboFreight",
+    "fleet_type": ["truck"],
+    "cost_per_km": 35,
+    "reliability_score": 0.96,
+    "availability": false,
+    "avg_speed_kmh": 70,
+    "coverage_cities": ["Mumbai", "Delhi", "Bangalore", "Ahmedabad"],
+    "rating": 4.6
+  },
+  {
+    "carrier_id": "C008",
+    "name": "OceanBridge Logistics",
+    "fleet_type": ["container", "tanker"],
+    "cost_per_km": 28,
+    "reliability_score": 0.91,
+    "availability": true,
+    "avg_speed_kmh": 45,
+    "coverage_cities": ["Mumbai", "Chennai", "Kolkata", "Visakhapatnam", "Kochi"],
+    "rating": 4.1
+  },
+  {
+    "carrier_id": "C009",
+    "name": "NorthStar Carriers",
+    "fleet_type": ["truck", "reefer"],
+    "cost_per_km": 24,
+    "reliability_score": 0.87,
+    "availability": true,
+    "avg_speed_kmh": 55,
+    "coverage_cities": ["Delhi", "Chandigarh", "Amritsar", "Lucknow", "Jaipur", "Dehradun"],
+    "rating": 4.0
+  },
+  {
+    "carrier_id": "C010",
+    "name": "PrimeHaul Express",
+    "fleet_type": ["truck", "flatbed", "container"],
+    "cost_per_km": 26,
+    "reliability_score": 0.93,
+    "availability": true,
+    "avg_speed_kmh": 60,
+    "coverage_cities": ["Mumbai", "Delhi", "Bangalore", "Chennai", "Hyderabad", "Pune", "Kolkata", "Ahmedabad"],
+    "rating": 4.4
+  }
+]
