@@ -10,11 +10,6 @@ import '../widgets/waveform_visualizer.dart';
 import 'results_screen.dart';
 
 /// Voice Home Screen — Main entry point with floating mic, waveform, and suggestion chips.
-///
-/// The mic button toggles speech recognition:
-/// - Single tap: start/stop listening (toggle mode)
-/// - Speech is recognized in real-time and shown on screen
-/// - When speech ends (pause detected) or user taps stop, the query is submitted
 class VoiceHomeScreen extends StatefulWidget {
   const VoiceHomeScreen({super.key});
 
@@ -30,6 +25,7 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
   bool _showTextField = false;
   bool _isListening = false;
   bool _isSubmitting = false;
+  bool _isActivated = false; // Track if user has activated the session
   String _liveTranscript = '';
   String _voiceError = '';
   bool _voiceAvailable = false;
@@ -55,7 +51,7 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
       duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
 
-    // Check backend connection
+    // Check backend connection but don't auto-greet yet (blocked by browsers)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AppState>().checkConnection();
       _initVoice();
@@ -74,12 +70,18 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
         _voiceAvailable = available;
         _voiceInitialized = true;
       });
+    }
+  }
 
-      // Automatically greet the user with the female voice
-      if (!_hasGreeted) {
-        _hasGreeted = true;
-        _speakAndListen();
-      }
+  Future<void> _activateAssistant() async {
+    setState(() {
+      _isActivated = true;
+    });
+    
+    // Now that we have user interaction, we can speak and listen
+    if (!_hasGreeted) {
+      _hasGreeted = true;
+      await _speakAndListen();
     }
   }
 
@@ -106,22 +108,22 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
   // ─── Voice actions ─────────────────────────────────────────────────
 
   Future<void> _toggleListening() async {
+    if (!_isActivated) {
+      await _activateAssistant();
+      return;
+    }
+
     final state = context.read<AppState>();
     
-    // Stop TTSService if it is speaking
     if (state.isSpeaking) {
-      await state.stopTTS(); // We need to add stopTTS to AppState or use TTSService directly
+      await state.stopTTS();
       return;
     }
 
     if (_isListening) {
       await _stopListening();
     } else {
-      if (!_hasGreeted) {
-        await _speakAndListen();
-      } else {
-        await _startListening();
-      }
+      await _startListening();
     }
   }
 
@@ -134,32 +136,14 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
       _voiceError = '';
     });
 
-    // We can access TTSService directly or through state, but AppState is simpler.
-    // Let's use TTSService directly for now to be clear, or add a helper to AppState.
-    // Actually, TTSService is a singleton.
     final tts = TTSService();
     
-    // Listen to state changes to know when it finishes
-    bool finishedSpeaking = false;
+    // Await greeting completion
+    await tts.speak("Hello! I am your logistics assistant. I can help you find the best shipping rates and book your cargo. For example, you can say: Ship 2 tons of electronics from Mumbai to Delhi. How can I help you today?");
     
-    // We can just await the speak call, but flutter_tts speak() completes when it *starts* or *finishes* depending on platform.
-    // Usually it completes when finished speaking.
-    // We'll also start the visual pulse for speaking.
-    
-    await tts.speak("Hello! I am your logistics assistant. I can help you find the best shipping rates and book your cargo. For example, you can say: Ship 2 tons of electronics from Mumbai to Delhi, or ask for the cheapest way to send goods from Bangalore to Chennai. How can I help you today?");
-    
-    // Ensure we are mounted
     if (!mounted) return;
     
     // Start listening right after
-    if (state.isSpeaking) {
-        // Wait until it finishes speaking
-        // This is a bit tricky, better to just wait a bit or use the callback.
-        // Let's simplify and just start listening after a small delay.
-        // Actually flutter_tts await speak() waits for the TTS to complete on iOS/Android, but on Web it might be different.
-    }
-    
-    // Web speech API usually finishes the await when it stops speaking.
     await _startListening();
   }
 
@@ -167,7 +151,7 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
     setState(() {
       _liveTranscript = '';
       _voiceError = '';
-      _showTextField = false; // Hide text field when using voice
+      _showTextField = false;
     });
 
     await _voiceService.startListening(
@@ -182,10 +166,8 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
           _resetSilenceTimer();
         }
 
-        // When speech recognition produces a final result, auto-submit
         if (isFinal && text.trim().isNotEmpty) {
           _silenceTimer?.cancel();
-          // Small delay so user can see the final transcript
           Future.delayed(const Duration(milliseconds: 600), () {
             if (mounted && text.trim().isNotEmpty) {
               _submitQuery(text.trim());
@@ -220,7 +202,6 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
       });
       context.read<AppState>().setListening(false);
 
-      // If we have accumulated text, submit it
       if (_liveTranscript.trim().isNotEmpty) {
         Future.delayed(const Duration(milliseconds: 300), () {
           if (mounted) {
@@ -233,21 +214,13 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
 
   String _friendlyError(String error) {
     if (error.contains('not-allowed') || error.contains('permission')) {
-      return 'Microphone access denied. Please allow microphone access in your browser settings and reload.';
+      return 'Microphone access denied. Please allow microphone access in your browser settings.';
     }
     if (error.contains('no-speech')) {
-      return 'No speech detected. Please try again and speak clearly.';
+      return 'No speech detected. Please try again.';
     }
-    if (error.contains('network')) {
-      return 'Network error. Speech recognition requires an internet connection.';
-    }
-    if (error.contains('aborted')) {
-      return ''; // User cancelled, not a real error
-    }
-    return 'Speech recognition error: $error';
+    return 'Speech error: $error';
   }
-
-  // ─── Submit query ──────────────────────────────────────────────────
 
   void _submitQuery(String query) async {
     if (_isSubmitting) return;
@@ -256,37 +229,20 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
     
     setState(() { _isSubmitting = true; });
 
-    // Stop listening if still active
     if (_isListening) {
       await _voiceService.stopListening();
-      setState(() {
-        _isListening = false;
-      });
+      setState(() { _isListening = false; });
       context.read<AppState>().setListening(false);
     }
 
     final state = context.read<AppState>();
     state.setTranscript(query);
 
-    // Navigate to results
     if (mounted) {
       Navigator.push(
         context,
-        PageRouteBuilder(
-          pageBuilder: (ctx, anim1, anim2) => const ResultsScreen(),
-          transitionsBuilder: (ctx, anim, anim2, child) {
-            return SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 1),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
-              child: child,
-            );
-          },
-          transitionDuration: const Duration(milliseconds: 400),
-        ),
+        MaterialPageRoute(builder: (ctx) => const ResultsScreen()),
       ).then((_) {
-        // Reset when user returns to this screen
         if (mounted) {
           setState(() {
             _liveTranscript = '';
@@ -300,8 +256,6 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
     await state.getRecommendationsFromText(query);
   }
 
-  // ─── Build ─────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     return Consumer<AppState>(
@@ -309,44 +263,114 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
         return Scaffold(
           body: Container(
             decoration: const BoxDecoration(gradient: AppTheme.surfaceGradient),
-            child: SafeArea(
-              child: Column(
-                children: [
-                  _buildHeader(state),
-                  const Spacer(flex: 1),
-                  _buildTitle(),
-                  const SizedBox(height: 24),
-                  if (state.isSpeaking) ...[
-                    // Add speaking indicator
-                    Icon(Icons.volume_up_rounded, color: AppTheme.accentCyan, size: 48),
-                    const SizedBox(height: 12),
-                    Text(
-                      "Speaking...",
-                      style: GoogleFonts.inter(color: AppTheme.accentCyan, fontWeight: FontWeight.w500),
-                    ),
-                  ] else ...[
-                    _buildWaveform(state),
-                  ],
-                  const SizedBox(height: 8),
-                  // Live transcript display
-                  if ((_liveTranscript.isNotEmpty || _isListening) && !state.isSpeaking)
-                    _buildLiveTranscript(),
-                  const SizedBox(height: 16),
-                  _buildMicButton(state),
-                  const SizedBox(height: 8),
-                  // Voice error message
-                  if (_voiceError.isNotEmpty) _buildVoiceError(),
-                  const SizedBox(height: 16),
-                  if (_showTextField) _buildTextInput(),
-                  const Spacer(flex: 1),
-                  _buildSuggestions(),
-                  const SizedBox(height: 16),
-                ],
-              ),
+            child: Stack(
+              children: [
+                SafeArea(
+                  child: Column(
+                    children: [
+                      _buildHeader(state),
+                      const Spacer(flex: 1),
+                      _buildTitle(),
+                      const SizedBox(height: 24),
+                      if (state.isSpeaking) ...[
+                        Icon(Icons.volume_up_rounded, color: AppTheme.accentCyan, size: 48),
+                        const SizedBox(height: 12),
+                        Text(
+                          "Speaking...",
+                          style: GoogleFonts.inter(color: AppTheme.accentCyan, fontWeight: FontWeight.w500),
+                        ),
+                      ] else ...[
+                        _buildWaveform(state),
+                      ],
+                      const SizedBox(height: 8),
+                      if ((_liveTranscript.isNotEmpty || _isListening) && !state.isSpeaking)
+                        _buildLiveTranscript(),
+                      const SizedBox(height: 16),
+                      _buildMicButton(state),
+                      const SizedBox(height: 8),
+                      if (_voiceError.isNotEmpty) _buildVoiceError(),
+                      const SizedBox(height: 16),
+                      if (_showTextField) _buildTextInput(),
+                      const Spacer(flex: 1),
+                      _buildSuggestions(),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
+                // Activation Overlay
+                if (!_isActivated) _buildActivationOverlay(),
+              ],
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildActivationOverlay() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: Colors.black.withValues(alpha: 0.8),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: AppTheme.primaryGradient,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.accentBlue.withValues(alpha: 0.4),
+                    blurRadius: 40,
+                    spreadRadius: 10,
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 64),
+            ),
+            const SizedBox(height: 32),
+            Text(
+              "LogiPrice Assistant",
+              style: GoogleFonts.inter(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              "Ready to help with your shipping needs.",
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                color: AppTheme.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 48),
+            ElevatedButton(
+              onPressed: _activateAssistant,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                elevation: 0,
+              ),
+              child: Text(
+                "Start Assistant",
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -355,7 +379,6 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Row(
         children: [
-          // Logo / Brand
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -374,75 +397,8 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
             ),
           ),
           const Spacer(),
-          // Voice availability indicator
-          if (_voiceInitialized)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: (_voiceAvailable ? AppTheme.accentCyan : AppTheme.accentAmber)
-                    .withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    _voiceAvailable ? Icons.mic_rounded : Icons.mic_off_rounded,
-                    size: 12,
-                    color: _voiceAvailable ? AppTheme.accentCyan : AppTheme.accentAmber,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _voiceAvailable ? 'Voice On' : 'Voice Off',
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                      color: _voiceAvailable ? AppTheme.accentCyan : AppTheme.accentAmber,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          const SizedBox(width: 6),
-          // Connection indicator
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: (state.isConnected ? AppTheme.accentGreen : AppTheme.accentRed)
-                  .withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: state.isConnected ? AppTheme.accentGreen : AppTheme.accentRed,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  state.isConnected ? 'Connected' : 'Offline',
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: state.isConnected ? AppTheme.accentGreen : AppTheme.accentRed,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          // History button
-          IconButton(
-            icon: const Icon(Icons.history_rounded, color: AppTheme.textSecondary),
-            onPressed: () {
-              // TODO: Navigate to history
-            },
-          ),
+          if (state.isConnected) 
+            const Icon(Icons.cloud_done_rounded, color: AppTheme.accentGreen, size: 18),
         ],
       ),
     );
@@ -453,27 +409,14 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(
         children: [
-          ShaderMask(
-            shaderCallback: (bounds) => AppTheme.primaryGradient.createShader(bounds),
-            child: Text(
-              'Where are you\nshipping today?',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 32,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
-                height: 1.2,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
           Text(
-            'Speak or type your shipment details for\ninstant AI-powered pricing',
+            'Where are you\nshipping today?',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-              fontSize: 14,
-              color: AppTheme.textSecondary,
-              height: 1.5,
+              fontSize: 32,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              height: 1.2,
             ),
           ),
         ],
@@ -494,189 +437,49 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
   Widget _buildLiveTranscript() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 200),
-        child: Container(
-          key: ValueKey(_liveTranscript),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: _isListening
-                  ? AppTheme.accentPurple.withValues(alpha: 0.3)
-                  : AppTheme.accentBlue.withValues(alpha: 0.2),
-            ),
-          ),
-          child: Row(
-            children: [
-              if (_isListening)
-                Padding(
-                  padding: const EdgeInsets.only(right: 10),
-                  child: SizedBox(
-                    width: 12,
-                    height: 12,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(
-                        AppTheme.accentPurple.withValues(alpha: 0.7),
-                      ),
-                    ),
-                  ),
-                ),
-              Expanded(
-                child: Text(
-                  _liveTranscript.isEmpty ? 'Listening...' : _liveTranscript,
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    color: _liveTranscript.isEmpty
-                        ? AppTheme.textMuted
-                        : AppTheme.textPrimary,
-                    fontStyle: _liveTranscript.isEmpty
-                        ? FontStyle.italic
-                        : FontStyle.normal,
-                    fontWeight: FontWeight.w400,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
-          ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.accentPurple.withValues(alpha: 0.3)),
+        ),
+        child: Text(
+          _liveTranscript.isEmpty ? 'Listening...' : _liveTranscript,
+          style: GoogleFonts.inter(fontSize: 15, color: Colors.white),
+          textAlign: TextAlign.center,
         ),
       ),
     );
   }
 
   Widget _buildVoiceError() {
-    if (_voiceError.isEmpty) return const SizedBox.shrink();
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: AppTheme.accentRed.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.accentRed.withValues(alpha: 0.2)),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, size: 16, color: AppTheme.accentAmber),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                _voiceError,
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: AppTheme.accentAmber,
-                ),
-              ),
-            ),
-            GestureDetector(
-              onTap: () => setState(() => _voiceError = ''),
-              child: Icon(Icons.close_rounded, size: 16, color: AppTheme.textMuted),
-            ),
-          ],
-        ),
+      child: Text(
+        _voiceError,
+        style: GoogleFonts.inter(fontSize: 12, color: AppTheme.accentAmber),
+        textAlign: TextAlign.center,
       ),
     );
   }
 
   Widget _buildMicButton(AppState state) {
-    return Column(
-      children: [
-        // Mic button
-        AnimatedBuilder(
-          animation: _pulseController,
-          builder: (context, child) {
-            final pulseScale = _isListening
-                ? 0.6 + _pulseController.value * 0.4
-                : 0.5 + _pulseController.value * 0.5;
-
-            return Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: (_isListening ? AppTheme.accentPurple : AppTheme.accentBlue)
-                        .withValues(alpha: 0.3 * pulseScale),
-                    blurRadius: _isListening ? 40 + _pulseController.value * 25 : 30 + _pulseController.value * 20,
-                    spreadRadius: _isListening ? _pulseController.value * 10 : _pulseController.value * 5,
-                  ),
-                ],
-              ),
-              child: GestureDetector(
-                onTap: _voiceAvailable ? _toggleListening : () {
-                  setState(() {
-                    _showTextField = !_showTextField;
-                    if (!_voiceAvailable) {
-                      _voiceError = 'Voice input is not available in this browser. Please use Chrome or type your query below.';
-                    }
-                  });
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: _isListening ? 80 : 72,
-                  height: _isListening ? 80 : 72,
-                  decoration: BoxDecoration(
-                    gradient: _isListening
-                        ? AppTheme.purpleGradient
-                        : AppTheme.primaryGradient,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: _isListening ? 0.3 : 0.2),
-                      width: _isListening ? 3 : 2,
-                    ),
-                  ),
-                  child: Icon(
-                    state.isSpeaking ? Icons.stop_rounded :
-                    _isListening ? Icons.stop_rounded : Icons.mic_rounded,
-                    color: Colors.white,
-                    size: (_isListening || state.isSpeaking) ? 36 : 32,
-                  ),
-                ),
-              ),
-            );
-          },
+    return GestureDetector(
+      onTap: _toggleListening,
+      child: Container(
+        width: 72,
+        height: 72,
+        decoration: BoxDecoration(
+          gradient: _isListening ? AppTheme.purpleGradient : AppTheme.primaryGradient,
+          shape: BoxShape.circle,
         ),
-        const SizedBox(height: 12),
-        // Status text
-        Text(
-          state.isSpeaking
-              ? 'Speaking... tap to interrupt'
-              : _isListening
-                  ? 'Listening... tap to stop'
-                  : _showTextField
-                      ? 'Type your query below'
-                      : _voiceAvailable
-                          ? 'Tap to speak'
-                          : 'Voice unavailable — tap to type',
-          style: GoogleFonts.inter(
-            fontSize: 12,
-            color: state.isSpeaking ? AppTheme.accentCyan : _isListening ? AppTheme.accentPurple : AppTheme.textMuted,
-            fontWeight: (state.isSpeaking || _isListening) ? FontWeight.w500 : FontWeight.w400,
-          ),
+        child: Icon(
+          _isListening ? Icons.stop_rounded : Icons.mic_rounded,
+          color: Colors.white,
+          size: 32,
         ),
-        // Keyboard toggle (when voice is available)
-        if (!_isListening)
-          TextButton.icon(
-            onPressed: () {
-              setState(() {
-                _showTextField = !_showTextField;
-                _voiceError = '';
-              });
-            },
-            icon: Icon(
-              _showTextField ? Icons.keyboard_hide_rounded : Icons.keyboard_rounded,
-              size: 16,
-              color: AppTheme.textMuted,
-            ),
-            label: Text(
-              _showTextField ? 'Hide keyboard' : 'Type instead',
-              style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted),
-            ),
-          ),
-      ],
+      ),
     );
   }
 
@@ -685,75 +488,38 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: TextField(
         controller: _textController,
-        autofocus: true,
-        style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 14),
+        style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
-          hintText: 'e.g., Ship electronics from Mumbai to Delhi...',
-          prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.textMuted, size: 20),
+          hintText: 'Type your query...',
           suffixIcon: IconButton(
             icon: const Icon(Icons.send_rounded, color: AppTheme.accentBlue),
             onPressed: () => _submitQuery(_textController.text),
           ),
         ),
         onSubmitted: _submitQuery,
-        textInputAction: TextInputAction.send,
       ),
     );
   }
 
   Widget _buildSuggestions() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Text(
-            'Try saying...',
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.textMuted,
-              letterSpacing: 0.5,
+    return SizedBox(
+      height: 40,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: _suggestions.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ActionChip(
+              label: Text(_suggestions[index]),
+              onPressed: () => _submitQuery(_suggestions[index]),
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
+              labelStyle: const TextStyle(color: Colors.white, fontSize: 12),
             ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          height: 42,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: _suggestions.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: GestureDetector(
-                  onTap: () => _submitQuery(_suggestions[index]),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                    child: Text(
-                      _suggestions[index],
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: AppTheme.textSecondary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
+          );
+        },
+      ),
     );
   }
 }
