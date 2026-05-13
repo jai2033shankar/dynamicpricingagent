@@ -81,9 +81,9 @@ PRIORITY_MULTIPLIERS = {
 # Weight surcharge tiers (per kg above threshold)
 WEIGHT_TIERS = [
     (500, 0),        # First 500 kg: no surcharge
-    (2000, 0.5),     # 500-2000 kg: ₹0.5/kg
-    (5000, 1.0),     # 2000-5000 kg: ₹1.0/kg
-    (float("inf"), 1.5),  # 5000+ kg: ₹1.5/kg
+    (2000, 0.5),     # 500-2000 kg: $0.5/kg
+    (5000, 1.0),     # 2000-5000 kg: $1.0/kg
+    (float("inf"), 1.5),  # 5000+ kg: $1.5/kg
 ]
 
 # Cargo type risk multipliers
@@ -213,19 +213,19 @@ def calculate_price(request: PricingRequest) -> PricingResult:
     # Generate explanation
     explanation_parts = []
     if demand_surge > 0:
-        explanation_parts.append(f"Demand surge adds ₹{demand_surge:,.0f} due to {signals['demand_index']:.1f}x demand")
+        explanation_parts.append(f"Demand surge adds ${demand_surge:,.0f} due to {signals['demand_index']:.1f}x demand")
     if fuel_adjustment > 0:
-        explanation_parts.append(f"Fuel index at {signals['fuel_price_index']:.2f}x adds ₹{fuel_adjustment:,.0f}")
+        explanation_parts.append(f"Fuel index at {signals['fuel_price_index']:.2f}x adds ${fuel_adjustment:,.0f}")
     if priority_premium > 0:
-        explanation_parts.append(f"{request.priority.title()} priority adds ₹{priority_premium:,.0f}")
+        explanation_parts.append(f"{request.priority.title()} priority adds ${priority_premium:,.0f}")
     if weight_surcharge > 0:
-        explanation_parts.append(f"Weight surcharge of ₹{weight_surcharge:,.0f} for {request.cargo_weight_kg}kg")
+        explanation_parts.append(f"Weight surcharge of ${weight_surcharge:,.0f} for {request.cargo_weight_kg}kg")
 
     explanation = (
-        f"Base cost ₹{base_cost:,.0f} for {request.distance_km}km. "
+        f"Base cost ${base_cost:,.0f} for {request.distance_km}km. "
         + ". ".join(explanation_parts) + "."
         if explanation_parts
-        else f"Base cost ₹{base_cost:,.0f} for {request.distance_km}km with standard conditions."
+        else f"Base cost ${base_cost:,.0f} for {request.distance_km}km with standard conditions."
     )
 
     breakdown = PricingBreakdown(
@@ -269,7 +269,7 @@ async def calculate(request: PricingRequest):
 
 
 @app.get("/pricing/signals")
-async def get_current_signals(origin: str = "Mumbai", destination: str = "Delhi"):
+async def get_current_signals(origin: str = "New York", destination: str = "Los Angeles"):
     """Get current external signals for a route."""
     return get_signals(origin, destination, {})
 

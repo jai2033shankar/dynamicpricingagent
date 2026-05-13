@@ -36,11 +36,11 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
   final VoiceService _voiceService = VoiceService();
 
   final List<String> _suggestions = [
-    'Ship 2 tons of electronics from Mumbai to Delhi urgently',
-    'Cheapest way to send FMCG goods Bangalore to Chennai',
-    'Express delivery 500kg pharmaceuticals Hyderabad to Kolkata',
-    'Move 1.5 tons of textiles from Ahmedabad to Pune',
-    'Ship perishable goods from Kochi to Mumbai under ₹40000',
+    'Ship 2 tons of electronics from New York to Los Angeles urgently',
+    'Cheapest way to send FMCG goods Dallas to Houston',
+    'Express delivery 500kg pharmaceuticals Austin to Miami',
+    'Move 1.5 tons of textiles from Boston to Philadelphia',
+    'Ship perishable goods from San Diego to New York under \$400',
   ];
 
   @override
@@ -139,7 +139,7 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
     final tts = TTSService();
     
     // Await greeting completion
-    await tts.speak("Hello! I am your logistics assistant. I can help you find the best shipping rates and book your cargo. For example, you can say: Ship 2 tons of electronics from Mumbai to Delhi. How can I help you today?");
+    await tts.speak("Hello! I am your logistics assistant. I can help you find the best shipping rates and book your cargo. For example, you can say: Ship 2 tons of electronics from New York to Los Angeles. How can I help you today?");
     
     if (!mounted) return;
     
@@ -227,6 +227,10 @@ class _VoiceHomeScreenState extends State<VoiceHomeScreen>
     _silenceTimer?.cancel();
     if (query.trim().isEmpty) return;
     
+    // Stop any ongoing greeting TTS
+    final tts = TTSService();
+    await tts.stop();
+
     setState(() { _isSubmitting = true; });
 
     if (_isListening) {

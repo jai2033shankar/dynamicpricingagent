@@ -65,18 +65,22 @@ class _ResultsScreenState extends State<ResultsScreen> {
       // Chrome sometimes interrupts SpeechSynthesis when the microphone audio stream is released.
       await Future.delayed(const Duration(milliseconds: 800));
       
-      // Construct explanation for all options
+      // Limit to top 2 options to prevent Web Speech API bug with long text
+      int optionsToSpeak = state.options.length > 2 ? 2 : state.options.length;
       String fullExplanation = "I found ${state.options.length} options. ";
       
-      for (int i = 0; i < state.options.length; i++) {
+      for (int i = 0; i < optionsToSpeak; i++) {
         final opt = state.options[i];
         final carrier = opt['carrier'] ?? 'Unknown carrier';
         final price = opt['price']?.toString() ?? '';
         final transit = opt['transit_hours']?.toString() ?? '';
         
-        fullExplanation += "Option ${i + 1} is with $carrier for $price rupees, taking $transit hours. ";
+        fullExplanation += "Option ${i + 1} is with $carrier for $price dollars, taking $transit hours. ";
       }
       
+      if (state.options.length > 2) {
+        fullExplanation += "I have also displayed other options on your screen. ";
+      }
       fullExplanation += "Which option would you like to book?";
       
       await _ttsService.speak(fullExplanation);

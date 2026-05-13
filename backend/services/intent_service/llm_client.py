@@ -27,14 +27,14 @@ Return ONLY valid JSON with these fields:
   "requires_reefer": boolean
 }
 
-Available cities: Mumbai, Pune, Delhi, Bangalore, Chennai, Hyderabad, Kolkata, Ahmedabad, Jaipur, Lucknow, Kanpur, Nagpur, Indore, Bhopal, Nashik, Varanasi, Patna, Chandigarh, Kochi, Visakhapatnam
+Available cities: New York, Philadelphia, Los Angeles, Dallas, Houston, Austin, Miami, Boston, Las Vegas, Atlanta, Charlotte, Pittsburgh, Chicago, Detroit, Baltimore, Orlando, Tampa, Seattle, San Diego, San Francisco
 
 Examples:
-User: "Ship 2 tons of electronics from Mumbai to Delhi urgently"
-Response: {"origin": "Mumbai", "destination": "Delhi", "cargo_type": "electronics", "weight_kg": 2000, "volume_cbm": 10, "priority": "express", "max_price": null, "requires_reefer": false}
+User: "Ship 2 tons of electronics from New York to Los Angeles urgently"
+Response: {"origin": "New York", "destination": "Los Angeles", "cargo_type": "electronics", "weight_kg": 2000, "volume_cbm": 10, "priority": "express", "max_price": null, "requires_reefer": false}
 
-User: "I need to send 500kg of medicines from Chennai to Kolkata, budget under 30000"
-Response: {"origin": "Chennai", "destination": "Kolkata", "cargo_type": "pharmaceuticals", "weight_kg": 500, "volume_cbm": 3, "priority": "standard", "max_price": 30000, "requires_reefer": false}
+User: "I need to send 500kg of medicines from Houston to Miami, budget under 30000"
+Response: {"origin": "Houston", "destination": "Miami", "cargo_type": "pharmaceuticals", "weight_kg": 500, "volume_cbm": 3, "priority": "standard", "max_price": 30000, "requires_reefer": false}
 
 Return ONLY the JSON object, no explanation or markdown."""
 

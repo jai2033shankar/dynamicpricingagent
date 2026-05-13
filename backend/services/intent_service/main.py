@@ -63,26 +63,26 @@ class IntentResponse(BaseModel):
 # ─── City coordinates lookup ─────────────────────────────────────────────────
 
 CITY_COORDS = {
-    "Mumbai": (19.0760, 72.8777),
-    "Pune": (18.5204, 73.8567),
-    "Delhi": (28.7041, 77.1025),
-    "Bangalore": (12.9716, 77.5946),
-    "Chennai": (13.0827, 80.2707),
-    "Hyderabad": (17.3850, 78.4867),
-    "Kolkata": (22.5726, 88.3639),
-    "Ahmedabad": (23.0225, 72.5714),
-    "Jaipur": (26.9124, 75.7873),
-    "Lucknow": (26.8467, 80.9462),
-    "Kanpur": (26.4499, 80.3319),
-    "Nagpur": (21.1458, 79.0882),
-    "Indore": (22.7196, 75.8577),
-    "Bhopal": (23.2599, 77.4126),
-    "Nashik": (19.9975, 73.7898),
-    "Varanasi": (25.3176, 82.9739),
-    "Patna": (25.6093, 85.1376),
-    "Chandigarh": (30.7333, 76.7794),
-    "Kochi": (9.9312, 76.2673),
-    "Visakhapatnam": (17.6868, 83.2185),
+    "New York": (19.0760, 72.8777),
+    "Philadelphia": (18.5204, 73.8567),
+    "Los Angeles": (28.7041, 77.1025),
+    "Dallas": (12.9716, 77.5946),
+    "Houston": (13.0827, 80.2707),
+    "Austin": (17.3850, 78.4867),
+    "Miami": (22.5726, 88.3639),
+    "Boston": (23.0225, 72.5714),
+    "Las Vegas": (26.9124, 75.7873),
+    "Atlanta": (26.8467, 80.9462),
+    "Charlotte": (26.4499, 80.3319),
+    "Pittsburgh": (21.1458, 79.0882),
+    "Chicago": (22.7196, 75.8577),
+    "Detroit": (23.2599, 77.4126),
+    "Baltimore": (19.9975, 73.7898),
+    "Orlando": (25.3176, 82.9739),
+    "Tampa": (25.6093, 85.1376),
+    "Seattle": (30.7333, 76.7794),
+    "San Diego": (9.9312, 76.2673),
+    "San Francisco": (17.6868, 83.2185),
     "Dehradun": (30.3165, 78.0322),
     "Amritsar": (31.6340, 74.8723),
 }
@@ -180,7 +180,7 @@ def extract_intent_regex(text: str) -> ShipmentIntent:
 
     # Extract price constraint
     max_price = None
-    price_match = re.search(r'(?:under|below|max|budget)\s*(?:rs\.?|₹|inr)?\s*(\d[\d,]*)', text_lower)
+    price_match = re.search(r'(?:under|below|max|budget)\s*(?:\$|usd)?\s*(\d[\d,]*)', text_lower)
     if price_match:
         max_price = float(price_match.group(1).replace(",", ""))
 

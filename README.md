@@ -92,7 +92,7 @@ The core competitive advantage of LogiPrice is its proprietary pricing engine th
 
 *   **P (Final Price):** The real-time quote delivered to the user.
 *   **B (Base Cost):** Distance (km) × Carrier Base Rate × Route Complexity Index.
-*   **D (Demand Multiplier):** Real-time corridor demand surge (e.g., higher rates for peak seasons on Mumbai-Delhi routes).
+*   **D (Demand Multiplier):** Real-time corridor demand surge (e.g., higher rates for peak seasons on New York-Los Angeles routes).
 *   **F (Fuel Index):** Automated adjustments tied to regional fuel price indices.
 *   **T (Traffic/Weather Factor):** A composite score derived from live weather (Monsoon/Snow) and metropolitan traffic congestion indices.
 *   **M (Margin):** An adaptive margin that fluctuates (3% to 15%) based on supply availability and customer priority.
@@ -107,9 +107,9 @@ Due to browser security protocols, voice-first apps require an initial user inte
 - **Result:** Initializes the secure audio context and triggers the **Female Greeting**.
 
 ### 2. Inquiry Phase
-- **Utterance:** *"Ship 2 tons of electronics from Mumbai to Delhi urgently."*
+- **Utterance:** *"Ship 2 tons of electronics from New York to Los Angeles urgently."*
 - **Processing:** The SLM extracts the intent. The Dynamic Pricing Engine calculates rates for multiple carriers (e.g., GreenWay, ExpressLink).
-- **Feedback:** The assistant verbally summarizes every option: *"I found 3 options. Option 1 is with GreenWay for ₹57,400..."*
+- **Feedback:** The assistant verbally summarizes every option: *"I found 3 options. Option 1 is with GreenWay for $57,400..."*
 
 ### 3. Selection & Booking
 - **Utterance:** *"Book the first one."*

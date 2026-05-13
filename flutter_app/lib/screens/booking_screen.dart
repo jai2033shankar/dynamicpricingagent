@@ -135,7 +135,7 @@ class _BookingScreenState extends State<BookingScreen> {
                             _buildDivider(),
                             _buildDetailRow(
                               'Price',
-                              '₹${_formatPrice((widget.booking['price'] as num?)?.toDouble() ?? 0)}',
+                              '\$${_formatPrice((widget.booking['price'] as num?)?.toDouble() ?? 0)}',
                               highlight: true,
                             ),
                             _buildDivider(),
@@ -266,8 +266,8 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   String _formatPrice(double price) {
-    if (price >= 100000) {
-      return '${(price / 100000).toStringAsFixed(2)}L';
+    if (price >= 1000000) {
+      return '${(price / 1000000).toStringAsFixed(2)}M';
     } else if (price >= 1000) {
       final thousands = (price / 1000).toStringAsFixed(1);
       return '${thousands}K';

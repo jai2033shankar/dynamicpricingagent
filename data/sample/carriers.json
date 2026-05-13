@@ -7,18 +7,18 @@
     "reliability_score": 0.92,
     "availability": true,
     "avg_speed_kmh": 55,
-    "coverage_cities": ["Mumbai", "Pune", "Indore", "Delhi", "Jaipur", "Ahmedabad"],
+    "coverage_cities": ["New York", "Philadelphia", "Chicago", "Los Angeles", "Las Vegas", "Boston"],
     "rating": 4.5
   },
   {
     "carrier_id": "C002",
-    "name": "SpeedFreight India",
+    "name": "SpeedFreight US",
     "fleet_type": ["truck", "container"],
     "cost_per_km": 30,
     "reliability_score": 0.95,
     "availability": true,
     "avg_speed_kmh": 65,
-    "coverage_cities": ["Mumbai", "Delhi", "Bangalore", "Chennai", "Hyderabad", "Kolkata"],
+    "coverage_cities": ["New York", "Los Angeles", "Dallas", "Houston", "Austin", "Miami"],
     "rating": 4.7
   },
   {
@@ -29,7 +29,7 @@
     "reliability_score": 0.85,
     "availability": true,
     "avg_speed_kmh": 50,
-    "coverage_cities": ["Mumbai", "Pune", "Nashik", "Nagpur", "Indore", "Bhopal", "Delhi"],
+    "coverage_cities": ["New York", "Philadelphia", "Baltimore", "Pittsburgh", "Chicago", "Detroit", "Los Angeles"],
     "rating": 4.0
   },
   {
@@ -40,18 +40,18 @@
     "reliability_score": 0.97,
     "availability": true,
     "avg_speed_kmh": 50,
-    "coverage_cities": ["Mumbai", "Pune", "Delhi", "Bangalore", "Chennai", "Hyderabad"],
+    "coverage_cities": ["New York", "Philadelphia", "Los Angeles", "Dallas", "Houston", "Austin"],
     "rating": 4.8
   },
   {
     "carrier_id": "C005",
-    "name": "BharatHaul",
+    "name": "AmeriHaul",
     "fleet_type": ["truck", "flatbed"],
     "cost_per_km": 20,
     "reliability_score": 0.88,
     "availability": true,
     "avg_speed_kmh": 55,
-    "coverage_cities": ["Delhi", "Jaipur", "Lucknow", "Kanpur", "Varanasi", "Patna", "Kolkata"],
+    "coverage_cities": ["Los Angeles", "Las Vegas", "Atlanta", "Charlotte", "Orlando", "Tampa", "Miami"],
     "rating": 4.2
   },
   {
@@ -62,7 +62,7 @@
     "reliability_score": 0.90,
     "availability": true,
     "avg_speed_kmh": 55,
-    "coverage_cities": ["Bangalore", "Chennai", "Hyderabad", "Pune", "Mumbai", "Kochi"],
+    "coverage_cities": ["Dallas", "Houston", "Austin", "Philadelphia", "New York", "San Diego"],
     "rating": 4.3
   },
   {
@@ -73,7 +73,7 @@
     "reliability_score": 0.96,
     "availability": false,
     "avg_speed_kmh": 70,
-    "coverage_cities": ["Mumbai", "Delhi", "Bangalore", "Ahmedabad"],
+    "coverage_cities": ["New York", "Los Angeles", "Dallas", "Boston"],
     "rating": 4.6
   },
   {
@@ -84,7 +84,7 @@
     "reliability_score": 0.91,
     "availability": true,
     "avg_speed_kmh": 45,
-    "coverage_cities": ["Mumbai", "Chennai", "Kolkata", "Visakhapatnam", "Kochi"],
+    "coverage_cities": ["New York", "Houston", "Miami", "San Francisco", "San Diego"],
     "rating": 4.1
   },
   {
@@ -95,7 +95,7 @@
     "reliability_score": 0.87,
     "availability": true,
     "avg_speed_kmh": 55,
-    "coverage_cities": ["Delhi", "Chandigarh", "Amritsar", "Lucknow", "Jaipur", "Dehradun"],
+    "coverage_cities": ["Los Angeles", "Seattle", "Amritsar", "Atlanta", "Las Vegas", "Dehradun"],
     "rating": 4.0
   },
   {
@@ -106,7 +106,7 @@
     "reliability_score": 0.93,
     "availability": true,
     "avg_speed_kmh": 60,
-    "coverage_cities": ["Mumbai", "Delhi", "Bangalore", "Chennai", "Hyderabad", "Pune", "Kolkata", "Ahmedabad"],
+    "coverage_cities": ["New York", "Los Angeles", "Dallas", "Houston", "Austin", "Philadelphia", "Miami", "Boston"],
     "rating": 4.4
   }
 ]

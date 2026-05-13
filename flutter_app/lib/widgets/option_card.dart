@@ -97,7 +97,7 @@ class OptionCard extends StatelessWidget {
               const Spacer(),
               // Price
               Text(
-                '₹${_formatPrice(price)}',
+                '\$${_formatPrice(price)}',
                 style: GoogleFonts.inter(
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
@@ -232,7 +232,7 @@ class OptionCard extends StatelessWidget {
             style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted),
           ),
           Text(
-            '₹${_formatPrice(amount)}',
+            '\$${_formatPrice(amount)}',
             style: GoogleFonts.inter(
               fontSize: 12,
               color: AppTheme.textSecondary,
@@ -245,8 +245,8 @@ class OptionCard extends StatelessWidget {
   }
 
   String _formatPrice(double price) {
-    if (price >= 100000) {
-      return '${(price / 100000).toStringAsFixed(1)}L';
+    if (price >= 1000000) {
+      return '${(price / 1000000).toStringAsFixed(1)}M';
     } else if (price >= 1000) {
       return '${(price / 1000).toStringAsFixed(1)}K';
     }

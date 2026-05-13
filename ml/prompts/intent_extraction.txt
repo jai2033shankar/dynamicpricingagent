@@ -14,7 +14,7 @@ Return ONLY valid JSON with these fields:
 }
 
 ## Available Cities
-Mumbai, Pune, Delhi, Bangalore, Chennai, Hyderabad, Kolkata, Ahmedabad, Jaipur, Lucknow, Kanpur, Nagpur, Indore, Bhopal, Nashik, Varanasi, Patna, Chandigarh, Kochi, Visakhapatnam, Dehradun, Amritsar
+New York, Philadelphia, Los Angeles, Dallas, Houston, Austin, Miami, Boston, Las Vegas, Atlanta, Charlotte, Pittsburgh, Chicago, Detroit, Baltimore, Orlando, Tampa, Seattle, San Diego, San Francisco, Dehradun, Amritsar
 
 ## Rules
 1. Always map city names to the closest match from the available cities list
@@ -27,19 +27,19 @@ Mumbai, Pune, Delhi, Bangalore, Chennai, Hyderabad, Kolkata, Ahmedabad, Jaipur, 
 
 ## Examples
 
-### Input: "Ship 2 tons of electronics from Mumbai to Delhi urgently"
+### Input: "Ship 2 tons of electronics from New York to Los Angeles urgently"
 ```json
-{"origin": "Mumbai", "destination": "Delhi", "cargo_type": "electronics", "weight_kg": 2000, "volume_cbm": 10, "priority": "express", "max_price": null, "requires_reefer": false}
+{"origin": "New York", "destination": "Los Angeles", "cargo_type": "electronics", "weight_kg": 2000, "volume_cbm": 10, "priority": "express", "max_price": null, "requires_reefer": false}
 ```
 
-### Input: "I need to send 500kg of medicines from Chennai to Kolkata, budget under 30000"
+### Input: "I need to send 500kg of medicines from Houston to Miami, budget under 30000"
 ```json
-{"origin": "Chennai", "destination": "Kolkata", "cargo_type": "pharmaceuticals", "weight_kg": 500, "volume_cbm": 3, "priority": "standard", "max_price": 30000, "requires_reefer": false}
+{"origin": "Houston", "destination": "Miami", "cargo_type": "pharmaceuticals", "weight_kg": 500, "volume_cbm": 3, "priority": "standard", "max_price": 30000, "requires_reefer": false}
 ```
 
-### Input: "cheapest way to move 5 tons of textiles from Ahmedabad to Bangalore"
+### Input: "cheapest way to move 5 tons of textiles from Boston to Dallas"
 ```json
-{"origin": "Ahmedabad", "destination": "Bangalore", "cargo_type": "textiles", "weight_kg": 5000, "volume_cbm": 25, "priority": "economy", "max_price": null, "requires_reefer": false}
+{"origin": "Boston", "destination": "Dallas", "cargo_type": "textiles", "weight_kg": 5000, "volume_cbm": 25, "priority": "economy", "max_price": null, "requires_reefer": false}
 ```
 
 Return ONLY the JSON object, no explanation or markdown formatting.
